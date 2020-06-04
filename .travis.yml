@@ -1,0 +1,27 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t nathanlw-2020/multi-docker -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true nathanlw-2020/multi-docker npm test
+
+after_success:
+  - docker build -t nathanlw-2020/multi-client ./client
+  - docker build -t nathanlw-2020/multi-nginx ./nginx
+  - docker build -t nathanlw-2020/multi-server ./server
+  - docker build -t nathanlw-2020/multi-worker ./worker
+
+
+  # Log into the Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  # Take those images and push them to Docker Hub
+  - docker push nathanlw-2020/multi-client
+  - docker push nathanlw-2020/multi-nginx
+  - docker push nathanlw-2020/multi-server
+  - docker push nathanlw-2020/multi-worker
+
